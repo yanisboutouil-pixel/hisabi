@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Header from '@/components/Header'
 import MonthNav from '@/components/MonthNav'
+import InvestBanner from '@/components/InvestBanner'
 import WifeMetricCards from '@/components/wife/WifeMetricCards'
 import WifeProgressBars from '@/components/wife/WifeProgressBars'
 import WifeUrssafBanner from '@/components/wife/WifeUrssafBanner'
@@ -50,10 +51,12 @@ export default function FemmePage() {
 
   useEffect(() => { load() }, [load])
 
-  const caEmis      = invoices.reduce((s, inv) => s + inv.amount, 0)
-  const caEncaisse  = encaisseInvoices.reduce((s, inv) => s + inv.amount, 0)
-  const urssaf      = caEncaisse * URSSAF_RATE
-  const revenuNet   = caEncaisse - urssaf
+  const caEmis        = invoices.reduce((s, inv) => s + inv.amount, 0)
+  const caEncaisse    = encaisseInvoices.reduce((s, inv) => s + inv.amount, 0)
+  const urssaf        = caEncaisse * URSSAF_RATE
+  const revenuNet     = caEncaisse - urssaf
+  const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0)
+  const disponible    = revenuNet - totalExpenses - saving
 
   return (
     <div className="min-h-screen">
@@ -66,6 +69,7 @@ export default function FemmePage() {
         <WifeInvoicesCard year={year} month={month} invoices={invoices} onUpdate={load} />
         <WifeVariableExpensesCard year={year} month={month} expenses={expenses} onUpdate={load} />
         <WifeSavingsCard year={year} month={month} saving={saving} onUpdate={load} />
+        <InvestBanner invest={disponible} label="Revenu disponible" />
       </main>
     </div>
   )

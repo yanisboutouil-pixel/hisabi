@@ -1,6 +1,6 @@
 import { fmt } from '@/lib/utils'
 
-export default function InvestBanner({ invest }: { invest: number }) {
+export default function InvestBanner({ invest, label = 'Disponible à investir' }: { invest: number; label?: string }) {
   const positive = invest >= 0
   return (
     <div className={`rounded-2xl p-5 flex items-center justify-between ${
@@ -10,7 +10,7 @@ export default function InvestBanner({ invest }: { invest: number }) {
     }`}>
       <div>
         <p className={`text-sm font-medium mb-0.5 ${positive ? 'text-primary-700 dark:text-primary-300' : 'text-red-700 dark:text-red-400'}`}>
-          Disponible à investir
+          {label}
         </p>
         <p className="text-xs text-zinc-400">Après charges, dépenses et épargne</p>
       </div>

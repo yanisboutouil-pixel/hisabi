@@ -1,14 +1,15 @@
 import { fmt } from '@/lib/utils'
-import { BAR_COLORS, SALARY } from '@/lib/constants'
+import { BAR_COLORS } from '@/lib/constants'
 
 interface Props {
+  salary: number
   totalFixed: number
   livretA: number
   totalVariable: number
   invest: number
 }
 
-export default function AllocationBar({ totalFixed, livretA, totalVariable, invest }: Props) {
+export default function AllocationBar({ salary, totalFixed, livretA, totalVariable, invest }: Props) {
   const segments = [
     { label: 'Charges fixes',   amt: totalFixed,   color: BAR_COLORS.fixed },
     { label: 'Livret A',        amt: livretA,       color: BAR_COLORS.livretA },
@@ -22,7 +23,7 @@ export default function AllocationBar({ totalFixed, livretA, totalVariable, inve
         {segments.map((s) => (
           <div
             key={s.label}
-            style={{ width: `${Math.max(0, (s.amt / SALARY) * 100).toFixed(1)}%`, background: s.color, transition: 'width 0.4s ease' }}
+            style={{ width: `${salary > 0 ? Math.max(0, (s.amt / salary) * 100).toFixed(1) : 0}%`, background: s.color, transition: 'width 0.4s ease' }}
           />
         ))}
       </div>

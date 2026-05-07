@@ -37,6 +37,13 @@ export interface MonthSummary {
   expensesByCategory: Record<string, number>
 }
 
+export interface MonthlySalary {
+  id?: string
+  year: number
+  month: number
+  amount: number
+}
+
 export interface WifeInvoice {
   id: string
   number: string

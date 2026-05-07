@@ -1,15 +1,16 @@
 import { fmt } from '@/lib/utils'
 
 interface Props {
+  salary: number
   totalFixed: number
   totalVariable: number
   livretA: number
   invest: number
 }
 
-export default function MetricCards({ totalFixed, totalVariable, livretA, invest }: Props) {
+export default function MetricCards({ salary, totalFixed, totalVariable, livretA, invest }: Props) {
   const cards = [
-    { label: 'Revenus',             value: 2150,         color: '' },
+    { label: 'Revenus',             value: salary,       color: '' },
     { label: 'Charges fixes',       value: totalFixed,   color: '' },
     { label: 'Dépenses variables',  value: totalVariable,color: '' },
     { label: 'Livret A ce mois',    value: livretA,      color: '' },

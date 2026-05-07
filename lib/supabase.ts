@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { FixedCharge, VariableExpense, MonthlySaving, MonthSummary, WifeInvoice, WifeVariableExpense, WifeMonthlySaving, WifeSettings, SharedContribution, SharedExpense } from './types'
+import type { FixedCharge, VariableExpense, MonthlySaving, MonthlySalary, MonthSummary, WifeInvoice, WifeVariableExpense, WifeMonthlySaving, WifeSettings, SharedContribution, SharedExpense } from './types'
 import { DEFAULT_FIXED_TOTAL, MONTHS_FR, SALARY } from './constants'
 
 export const supabase = createClient(
@@ -66,6 +66,29 @@ export async function addVariableExpense(
 export async function deleteVariableExpense(id: string): Promise<void> {
   const { error } = await supabase.from('variable_expenses').delete().eq('id', id)
   if (error) throw error
+}
+
+// ── Monthly salary ─────────────────────────────────────────────
+
+export async function getMonthlySalary(year: number, month: number): Promise<MonthlySalary | null> {
+  const { data, error } = await supabase
+    .from('monthly_salary')
+    .select('*')
+    .eq('year', year)
+    .eq('month', month)
+    .maybeSingle()
+  if (error) throw error
+  return data
+}
+
+export async function upsertMonthlySalary(year: number, month: number, amount: number): Promise<MonthlySalary> {
+  const { data, error } = await supabase
+    .from('monthly_salary')
+    .upsert({ year, month, amount }, { onConflict: 'year,month' })
+    .select()
+    .single()
+  if (error) throw error
+  return data
 }
 
 // ── Monthly savings ────────────────────────────────────────────
@@ -304,20 +327,17 @@ export async function getMonthSummaries(count: number = 12): Promise<MonthSummar
     months.push({ year: d.getFullYear(), month: d.getMonth() + 1 })
   }
 
-  const [fixedRows, expenseRows, savingRows] = await Promise.all([
+  const years = Array.from(new Set(months.map((m) => m.year)))
+  const [fixedRows, expenseRows, savingRows, salaryRows] = await Promise.all([
     getFixedCharges(),
-    supabase
-      .from('variable_expenses')
-      .select('*')
-      .in('year', Array.from(new Set(months.map((m) => m.year)))),
-    supabase
-      .from('monthly_savings')
-      .select('*')
-      .in('year', Array.from(new Set(months.map((m) => m.year)))),
+    supabase.from('variable_expenses').select('*').in('year', years),
+    supabase.from('monthly_savings').select('*').in('year', years),
+    supabase.from('monthly_salary').select('*').in('year', years),
   ])
 
   const expenses: VariableExpense[] = (expenseRows.data ?? []) as VariableExpense[]
   const savings: MonthlySaving[]    = (savingRows.data  ?? []) as MonthlySaving[]
+  const salaries: MonthlySalary[]   = (salaryRows.data  ?? []) as MonthlySalary[]
 
   const totalCustomFixed = fixedRows.reduce(
     (s, f) => s + (f.split_with_wife ? f.amount / 2 : f.amount),
@@ -328,9 +348,10 @@ export async function getMonthSummaries(count: number = 12): Promise<MonthSummar
   return months.map(({ year, month }) => {
     const monthExpenses = expenses.filter((e) => e.year === year && e.month === month)
     const saving        = savings.find((s) => s.year === year && s.month === month)
+    const salary        = salaries.find((s) => s.year === year && s.month === month)?.amount ?? 0
     const totalVariable = monthExpenses.reduce((s, e) => s + e.amount, 0)
     const livretA       = saving?.livret_a ?? 0
-    const invest        = SALARY - totalFixed - totalVariable - livretA
+    const invest        = salary - totalFixed - totalVariable - livretA
 
     const expensesByCategory: Record<string, number> = {}
     monthExpenses.forEach((e) => {

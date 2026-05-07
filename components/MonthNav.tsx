@@ -5,9 +5,10 @@ interface Props {
   year: number
   month: number
   onChange: (year: number, month: number) => void
+  salary?: number
 }
 
-export default function MonthNav({ year, month, onChange }: Props) {
+export default function MonthNav({ year, month, onChange, salary }: Props) {
   const prev = () => {
     if (month === 1) onChange(year - 1, 12)
     else onChange(year, month - 1)
@@ -28,7 +29,9 @@ export default function MonthNav({ year, month, onChange }: Props) {
         <p className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
           {MONTHS_FR[month - 1]} {year}
         </p>
-        <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">Salaire net · <strong className="text-zinc-600 dark:text-zinc-300">2 150 €</strong></p>
+        {salary != null && salary > 0 && (
+          <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">Salaire net · <strong className="text-zinc-600 dark:text-zinc-300">{salary.toLocaleString('fr-FR')} €</strong></p>
+        )}
       </div>
       <button onClick={next} className="btn-ghost px-3 py-2">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
