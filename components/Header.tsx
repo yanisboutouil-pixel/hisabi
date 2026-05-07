@@ -26,7 +26,7 @@ export default function Header() {
         <nav className="flex items-center gap-1">
           <NavLink href="/" active={pathname === '/'}>Mon budget</NavLink>
           <NavLink href="/historique" active={pathname === '/historique'}>Historique</NavLink>
-          <NavLink href="/femme" active={pathname === '/femme'}>Budget femme</NavLink>
+          <NavLink href="/femme" active={pathname === '/femme'}>Budget Juliette</NavLink>
           <NavLink href="/commun" active={pathname === '/commun'}>Compte commun</NavLink>
         </nav>
 
