@@ -44,3 +44,7 @@ export const BAR_COLORS = {
   invest:  '#0A7254',
   over:    '#A32D2D',
 }
+
+export const URSSAF_RATE = 0.22
+export const WIFE_ANNUAL_CAP = 77700
+export const INVOICE_STATUSES = ['émise', 'payée', 'en retard'] as const

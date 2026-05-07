@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { FixedCharge, VariableExpense, MonthlySaving, MonthSummary } from './types'
+import type { FixedCharge, VariableExpense, MonthlySaving, MonthSummary, WifeInvoice, WifeVariableExpense, WifeMonthlySaving, WifeSettings, SharedContribution, SharedExpense } from './types'
 import { DEFAULT_FIXED_TOTAL, MONTHS_FR, SALARY } from './constants'
 
 export const supabase = createClient(
@@ -96,6 +96,202 @@ export async function upsertMonthlySaving(
     .single()
   if (error) throw error
   return data
+}
+
+// ── Wife — Invoices ─────────────────────────────────────────────
+
+function monthRange(year: number, month: number) {
+  const padM = String(month).padStart(2, '0')
+  const lastDay = String(new Date(year, month, 0).getDate()).padStart(2, '0')
+  return { from: `${year}-${padM}-01`, to: `${year}-${padM}-${lastDay}` }
+}
+
+export async function getWifeInvoices(year: number, month: number): Promise<WifeInvoice[]> {
+  const { from, to } = monthRange(year, month)
+  const { data, error } = await supabase
+    .from('wife_invoices')
+    .select('*')
+    .gte('date_issued', from)
+    .lte('date_issued', to)
+    .order('date_issued', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}
+
+export async function getWifeEncaisseForMonth(year: number, month: number): Promise<WifeInvoice[]> {
+  const { from, to } = monthRange(year, month)
+  const { data, error } = await supabase
+    .from('wife_invoices')
+    .select('*')
+    .eq('status', 'payée')
+    .gte('date_paid', from)
+    .lte('date_paid', to)
+  if (error) throw error
+  return data ?? []
+}
+
+export async function getWifeAnnualCA(year: number): Promise<number> {
+  const { data, error } = await supabase
+    .from('wife_invoices')
+    .select('amount')
+    .gte('date_issued', `${year}-01-01`)
+    .lte('date_issued', `${year}-12-31`)
+  if (error) throw error
+  return (data ?? []).reduce((s, inv) => s + inv.amount, 0)
+}
+
+export async function addWifeInvoice(
+  invoice: Omit<WifeInvoice, 'id' | 'created_at'>
+): Promise<WifeInvoice> {
+  const { data, error } = await supabase
+    .from('wife_invoices')
+    .insert(invoice)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateWifeInvoiceStatus(
+  id: string,
+  status: WifeInvoice['status'],
+  date_paid?: string | null
+): Promise<void> {
+  const update: { status: WifeInvoice['status']; date_paid?: string | null } = { status }
+  if (date_paid !== undefined) update.date_paid = date_paid
+  const { error } = await supabase.from('wife_invoices').update(update).eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteWifeInvoice(id: string): Promise<void> {
+  const { error } = await supabase.from('wife_invoices').delete().eq('id', id)
+  if (error) throw error
+}
+
+// ── Wife — Variable expenses ─────────────────────────────────────
+
+export async function getWifeVariableExpenses(year: number, month: number): Promise<WifeVariableExpense[]> {
+  const { data, error } = await supabase
+    .from('wife_variable_expenses')
+    .select('*')
+    .eq('year', year)
+    .eq('month', month)
+    .order('expense_date', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}
+
+export async function addWifeVariableExpense(
+  expense: Omit<WifeVariableExpense, 'id' | 'created_at'>
+): Promise<WifeVariableExpense> {
+  const { data, error } = await supabase
+    .from('wife_variable_expenses')
+    .insert(expense)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteWifeVariableExpense(id: string): Promise<void> {
+  const { error } = await supabase.from('wife_variable_expenses').delete().eq('id', id)
+  if (error) throw error
+}
+
+// ── Wife — Monthly savings ───────────────────────────────────────
+
+export async function getWifeMonthlySaving(year: number, month: number): Promise<WifeMonthlySaving | null> {
+  const { data, error } = await supabase
+    .from('wife_monthly_savings')
+    .select('*')
+    .eq('year', year)
+    .eq('month', month)
+    .maybeSingle()
+  if (error) throw error
+  return data
+}
+
+export async function upsertWifeMonthlySaving(year: number, month: number, amount: number): Promise<WifeMonthlySaving> {
+  const { data, error } = await supabase
+    .from('wife_monthly_savings')
+    .upsert({ year, month, amount }, { onConflict: 'year,month' })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+// ── Wife — Settings ──────────────────────────────────────────────
+
+export async function getWifeSettings(): Promise<WifeSettings> {
+  const { data, error } = await supabase
+    .from('wife_settings')
+    .select('*')
+    .eq('id', 1)
+    .maybeSingle()
+  if (error) throw error
+  return data ?? { id: 1, monthly_goal: 0 }
+}
+
+export async function updateWifeMonthlyGoal(monthly_goal: number): Promise<void> {
+  const { error } = await supabase
+    .from('wife_settings')
+    .upsert({ id: 1, monthly_goal }, { onConflict: 'id' })
+  if (error) throw error
+}
+
+// ── Shared account — Contributions ──────────────────────────────
+
+export async function getSharedContributions(year: number, month: number): Promise<SharedContribution[]> {
+  const { data, error } = await supabase
+    .from('shared_contributions')
+    .select('*')
+    .eq('year', year)
+    .eq('month', month)
+  if (error) throw error
+  return (data ?? []) as SharedContribution[]
+}
+
+export async function upsertSharedContribution(
+  year: number,
+  month: number,
+  person: 'yanis' | 'wife',
+  amount: number
+): Promise<void> {
+  const { error } = await supabase
+    .from('shared_contributions')
+    .upsert({ year, month, person, amount }, { onConflict: 'year,month,person' })
+  if (error) throw error
+}
+
+// ── Shared account — Expenses ────────────────────────────────────
+
+export async function getSharedExpenses(year: number, month: number): Promise<SharedExpense[]> {
+  const { data, error } = await supabase
+    .from('shared_expenses')
+    .select('*')
+    .eq('year', year)
+    .eq('month', month)
+    .order('expense_date', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}
+
+export async function addSharedExpense(
+  expense: Omit<SharedExpense, 'id' | 'created_at'>
+): Promise<SharedExpense> {
+  const { data, error } = await supabase
+    .from('shared_expenses')
+    .insert(expense)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteSharedExpense(id: string): Promise<void> {
+  const { error } = await supabase.from('shared_expenses').delete().eq('id', id)
+  if (error) throw error
 }
 
 // ── History (last N months) ────────────────────────────────────
