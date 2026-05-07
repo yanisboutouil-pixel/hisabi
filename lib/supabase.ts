@@ -113,11 +113,11 @@ export async function getMonthSummaries(count: number = 12): Promise<MonthSummar
     supabase
       .from('variable_expenses')
       .select('*')
-      .in('year', [...new Set(months.map((m) => m.year))]),
+      .in('year', Array.from(new Set(months.map((m) => m.year)))),
     supabase
       .from('monthly_savings')
       .select('*')
-      .in('year', [...new Set(months.map((m) => m.year))]),
+      .in('year', Array.from(new Set(months.map((m) => m.year)))),
   ])
 
   const expenses: VariableExpense[] = (expenseRows.data ?? []) as VariableExpense[]
