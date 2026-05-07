@@ -17,7 +17,7 @@ export default function SharedBalanceCard({ totalContributions, totalExpenses, b
         <p className="text-xs text-zinc-400">Versement</p>
       </div>
       <div className="metric-card">
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">Femme</p>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">Juliette</p>
         <p className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">{fmt(wifeContrib)}</p>
         <p className="text-xs text-zinc-400">Versement</p>
       </div>

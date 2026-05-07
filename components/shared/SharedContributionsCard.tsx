@@ -57,7 +57,7 @@ export default function SharedContributionsCard({ year, month, yanisContrib, wif
           </div>
         </div>
         <div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1.5">Femme — actuel : {fmt(wifeContrib)}</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1.5">Juliette — actuel : {fmt(wifeContrib)}</p>
           <div className="flex gap-2">
             <input
               type="number"

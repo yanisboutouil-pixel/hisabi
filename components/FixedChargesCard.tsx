@@ -97,7 +97,7 @@ export default function FixedChargesCard({ charges, onUpdate }: Props) {
           <div className="flex items-center gap-3 mb-3">
             <label className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 cursor-pointer select-none">
               <input type="checkbox" checked={split} onChange={(e) => setSplit(e.target.checked)} className="w-4 h-4 rounded accent-primary-600" />
-              ÷ 2 avec ma femme
+              ÷ 2 avec Juliette
             </label>
             {preview && <span className="text-xs text-zinc-400">{preview}</span>}
           </div>
