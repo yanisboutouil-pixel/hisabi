@@ -34,12 +34,12 @@ export default function FemmePage() {
 
   const load = useCallback(async () => {
     const [inv, enc, aCA, exp, sav, sets] = await Promise.all([
-      getWifeInvoices(year, month),
-      getWifeEncaisseForMonth(year, month),
-      getWifeAnnualCA(year),
-      getWifeVariableExpenses(year, month),
-      getWifeMonthlySaving(year, month),
-      getWifeSettings(),
+      getWifeInvoices(year, month).catch(() => []),
+      getWifeEncaisseForMonth(year, month).catch(() => []),
+      getWifeAnnualCA(year).catch(() => 0),
+      getWifeVariableExpenses(year, month).catch(() => []),
+      getWifeMonthlySaving(year, month).catch(() => null),
+      getWifeSettings().catch(() => ({ id: 1, monthly_goal: 0 })),
     ])
     setInvoices(inv)
     setEncaisseInvoices(enc)

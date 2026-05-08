@@ -18,8 +18,8 @@ export default function CommunPage() {
 
   const load = useCallback(async () => {
     const [contribs, exps] = await Promise.all([
-      getSharedContributions(year, month),
-      getSharedExpenses(year, month),
+      getSharedContributions(year, month).catch(() => []),
+      getSharedExpenses(year, month).catch(() => []),
     ])
     setContributions(contribs)
     setExpenses(exps)

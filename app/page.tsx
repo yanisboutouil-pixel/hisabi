@@ -26,7 +26,7 @@ export default function Home() {
 
   const load = useCallback(async () => {
     const [sal, fc, exp, sav] = await Promise.all([
-      getMonthlySalary(year, month),
+      getMonthlySalary(year, month).catch(() => null),
       getFixedCharges(),
       getVariableExpenses(year, month),
       getMonthlySaving(year, month),
